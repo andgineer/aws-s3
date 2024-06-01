@@ -6,11 +6,11 @@ build-backend = "hatchling.build"
 name = "aws-s3"
 dynamic = [ "version",]
 description = "S3 Bucket helper utils. Async list objects by folders"
-keywords = [ "one", "two", ]
+keywords = [ "one", "two",]
 classifiers = [ "Programming Language :: Python :: 3", "License :: OSI Approved :: MIT License", "Operating System :: OS Independent",]
 readme = "README.md"
 requires-python = ">=3.9"
-dependencies = []
+dependencies = [ "click", "rich-click",]
 [[project.authors]]
 name = "Andrey Sorokin"
 email = "andrey@sorokin.engineer"
@@ -25,12 +25,6 @@ Documentation = "https://andgineer.github.io/aws-s3/"
 [tool.setuptools]
 packages = "find:"
 
-[tool.setuptools.package-dir]
-"" = "src"
-
-[tool.setuptools.manifest]
-include = [ "README.md", "LICENSE.txt",]
-
 [tool.ruff]
 line-length = 99
 
@@ -40,14 +34,14 @@ venv = ".venv"
 reportMissingImports = true
 reportMissingModuleSource = false
 reportMissingTypeStubs = true
+include = [ "src",]
+exclude = [ "**/node_modules", "**/__pycache__",]
 
-include = ["src"]
-exclude = ["**/node_modules",
-    "**/__pycache__"
-]
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.manifest]
+include = [ "README.md", "LICENSE.txt",]
 
 [tool.hatch.version]
 path = "src/aws_s3/__about__.py"
-
-#[project.scripts]
-#aws-s3 = "aws_s3.main:aws_s3"

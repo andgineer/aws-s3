@@ -9,14 +9,13 @@ from aws_s3 import __version__
 click.rich_click.USE_MARKDOWN = True
 OUTPUT_FILE_DEFAULT = "output"
 
+
 @click.command()
 @click.version_option(version=__version__, prog_name="aws-s3")
 @click.argument("input_file", type=click.Path(exists=True))
 @click.argument("output_file", type=click.Path(), required=False)
 @click.option("--force", is_flag=True, help="Overwrite the output file if it exists.")
-def aws_s3(
-    input_file: str, output_file: str, force: bool
-) -> None:
+def aws_s3(input_file: str, output_file: str, force: bool) -> None:
     """
     `INPUT_FILE` to `OUTPUT_FILE`.
     """
