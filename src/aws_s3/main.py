@@ -9,11 +9,11 @@ from aws_s3 import __version__
 click.rich_click.USE_MARKDOWN = True
 OUTPUT_FILE_DEFAULT = "output"
 
-@click.command()  # type: ignore
-@click.version_option(version=__version__, prog_name="aws-s3")  # type: ignore
-@click.argument("input_file", type=click.Path(exists=True))  # type: ignore
-@click.argument("output_file", type=click.Path(), required=False)  # type: ignore
-@click.option("--force", is_flag=True, help="Overwrite the output file if it exists.")  # type: ignore
+@click.command()
+@click.version_option(version=__version__, prog_name="aws-s3")
+@click.argument("input_file", type=click.Path(exists=True))
+@click.argument("output_file", type=click.Path(), required=False)
+@click.option("--force", is_flag=True, help="Overwrite the output file if it exists.")
 def aws_s3(
     input_file: str, output_file: str, force: bool
 ) -> None:
