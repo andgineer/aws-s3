@@ -41,7 +41,7 @@ def create_s3_objects(key, value, bucket_name, s3_client, parent_path):
 
 
 def wait_for_moto_server(s3_client, moto_server_process, retries=5, delay=1):
-    for _ in range(retries):
+    for i in range(retries):
         try:
             s3_client.list_buckets()
             return True
