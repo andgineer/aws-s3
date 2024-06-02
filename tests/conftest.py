@@ -13,6 +13,15 @@ import aiobotocore
 import aiobotocore.session
 
 
+@pytest.fixture(scope="session", autouse=True)
+def set_fake_aws_credentials():
+    """Set fake AWS credentials for the test session."""
+    os.environ['AWS_ACCESS_KEY_ID'] = 'fake_access_key'
+    os.environ['AWS_SECRET_ACCESS_KEY'] = 'fake_secret_key'
+    os.environ['AWS_SESSION_TOKEN'] = 'fake_session_token'
+    yield
+
+
 def create_s3_folder(bucket_name, structure, s3_client, parent_path=""):
     if isinstance(structure, list):
         for item in structure:
