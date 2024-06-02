@@ -3,7 +3,10 @@
 # test
 pytest
 pytest-cov
+pytest-asyncio
 allure-pytest
+moto[server]
+pyyaml
 
 # lint
 pre-commit
