@@ -45,8 +45,8 @@ def wait_for_moto_server(s3_client, moto_server_process, retries=5, delay=1):
         try:
             s3_client.list_buckets()
             return True
-        except Exception:
-            print(f"Attempt {i + 1}/{retries} failed: {e}")
+        except Exception as exc:
+            print(f"Attempt {i + 1}/{retries} failed: {exc}")
             stderr_output = moto_server_process.stderr.readline()
             if stderr_output:
                 print(stderr_output.decode(), end="")
