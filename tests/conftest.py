@@ -46,6 +46,7 @@ def wait_for_moto_server(s3_client, moto_server_process, retries=5, delay=1):
             s3_client.list_buckets()
             return True
         except Exception:
+            print(f"Attempt {i + 1}/{retries} failed: {e}")
             stderr_output = moto_server_process.stderr.readline()
             if stderr_output:
                 print(stderr_output.decode(), end="")
@@ -69,7 +70,7 @@ def fake_s3_server():
     """
     port = get_free_port()
     moto_server_process = subprocess.Popen(
-        ["moto_server", f"-p{port}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        ["moto_server", "-H", "0.0.0.0", f"-p{port}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
     endpoint_url = f"http://127.0.0.1:{port}"
     s3_client = boto3.client("s3", region_name="us-east-1", endpoint_url=endpoint_url)
