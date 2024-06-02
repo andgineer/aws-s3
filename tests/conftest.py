@@ -1,5 +1,6 @@
 import os
 import pathlib
+import socket
 import subprocess
 import time
 from unittest.mock import patch
@@ -52,6 +53,12 @@ def wait_for_moto_server(s3_client, moto_server_process, retries=5, delay=1):
     return False
 
 
+def get_free_port():
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(('', 0))
+        return s.getsockname()[1]
+
+
 @pytest.fixture(scope="session")
 def fake_s3_server():
     """Starts a Moto server.
@@ -60,10 +67,12 @@ def fake_s3_server():
 
     Returns (<S3 client>, <factory for async S3 clients>).
     """
+    port = get_free_port()
     moto_server_process = subprocess.Popen(
-        ["moto_server", "-p3000"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        ["moto_server", f"-p{port}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
-    s3_client = boto3.client("s3", region_name="us-east-1", endpoint_url="http://localhost:3000")
+    endpoint_url = f"http://127.0.0.1:{port}"
+    s3_client = boto3.client("s3", region_name="us-east-1", endpoint_url=endpoint_url)
 
     if not wait_for_moto_server(s3_client, moto_server_process):
         print("Failed to start the Moto server.")
@@ -75,7 +84,7 @@ def fake_s3_server():
     yield (
         s3_client,
         lambda: session.create_client(
-            "s3", region_name="us-east-1", endpoint_url="http://localhost:3000"
+            "s3", region_name="us-east-1", endpoint_url=endpoint_url
         ),
     )
 
