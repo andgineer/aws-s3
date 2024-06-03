@@ -1,6 +1,6 @@
 import asyncio
 import functools
-from typing import Iterable, Any, Dict
+from typing import Iterable, Any, Dict, Optional, Tuple, List
 
 import aiobotocore.session
 import aiobotocore.client
@@ -27,13 +27,21 @@ class ListObjectsAsync:
         self._bucket = bucket
 
     async def _list_objects(
-        self, s3_client: aiobotocore.client.AioBaseClient, prefix: str
-    ) -> Dict[str, Any]:
+        self,
+        s3_client: aiobotocore.client.AioBaseClient,
+        prefix: str,
+        current_depth: int,
+        max_depth: Optional[int],
+    ) -> Tuple[Iterable[Dict[str, Any]], Iterable[Tuple[str, int]]]:
         paginator = s3_client.get_paginator("list_objects_v2")
         objects = []
         prefixes = []
 
-        async for page in paginator.paginate(Bucket=self._bucket, Prefix=prefix, Delimiter="/"):
+        params = {"Bucket": self._bucket, "Prefix": prefix}
+        if max_depth is None or current_depth < max_depth:
+            params["Delimiter"] = "/"
+
+        async for page in paginator.paginate(**params):
             for obj in page.get("Contents", []):
                 key: str = obj["Key"]
                 if key.endswith("/"):
@@ -41,33 +49,38 @@ class ListObjectsAsync:
 
                 objects.append(obj)
 
-            prefixes.extend(page.get("CommonPrefixes", []))  # add "subdirectories"
+            if "Delimiter" in params:
+                prefixes.extend(
+                    [
+                        (prefix["Prefix"], current_depth + 1)
+                        for prefix in page.get("CommonPrefixes", [])
+                    ]
+                )
 
-        return {"Objects": objects, "CommonPrefixes": prefixes}
+        return objects, prefixes
 
     async def list_objects(
-        self,
-        prefix: str = "/",
+        self, prefix: str = "/", max_depth: Optional[int] = None
     ) -> Iterable[Dict[str, Any]]:
         """List all objects in the bucket with given prefix."""
-        objects = []
+        objects: List[Dict[str, Any]] = []
         tasks = set()
 
         async with get_s3_client() as s3_client:
-            tasks.add(asyncio.create_task(self._list_objects(s3_client, prefix)))
+            tasks.add(asyncio.create_task(self._list_objects(s3_client, prefix, 0, max_depth)))
 
             while tasks:
                 done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
                 tasks = pending
 
                 for task in done:
-                    result = await task
-                    objects.extend(result["Objects"])
+                    files, folders = await task
+                    objects.extend(files)
 
-                    for common_prefix in result["CommonPrefixes"]:
+                    for folder, level in folders:
                         tasks.add(
                             asyncio.create_task(
-                                self._list_objects(s3_client, common_prefix["Prefix"])
+                                self._list_objects(s3_client, folder, level, max_depth)
                             )
                         )
 
