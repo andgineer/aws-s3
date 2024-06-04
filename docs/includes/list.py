@@ -1,5 +1,6 @@
 import asyncio
-from list_objects_async import ListObjectsAsync
+from aws_s3 import ListObjectsAsync
+
 
 async def main():
     bucket_name = "your-bucket-name"

@@ -1,5 +1,5 @@
 import pytest
-from aws_s3.list_objects_async import ListObjectsAsync
+from aws_s3 import ListObjectsAsync
 
 
 @pytest.mark.asyncio
