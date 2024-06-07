@@ -2,12 +2,12 @@
 
 [Full report](https://htmlpreview.github.io/?https://github.com/andgineer/aws-s3/blob/python-coverage-comment-action-data/htmlcov/index.html)
 
-| Name                                |    Stmts |     Miss |   Cover |   Missing |
-|------------------------------------ | -------: | -------: | ------: | --------: |
-| src/aws\_s3/\_\_about\_\_.py        |        1 |        0 |    100% |           |
-| src/aws\_s3/list\_objects\_async.py |       46 |        4 |     91% | 13, 18-22 |
-| src/aws\_s3/main.py                 |       16 |        5 |     69% |     22-31 |
-|                           **TOTAL** |   **63** |    **9** | **86%** |           |
+| Name                                  |    Stmts |     Miss |   Cover |   Missing |
+|-------------------------------------- | -------: | -------: | ------: | --------: |
+| src/async\_s3/\_\_about\_\_.py        |        1 |        0 |    100% |           |
+| src/async\_s3/list\_objects\_async.py |       46 |        4 |     91% | 13, 18-22 |
+| src/async\_s3/main.py                 |       16 |        5 |     69% |     22-31 |
+|                             **TOTAL** |   **63** |    **9** | **86%** |           |
 
 
 ## Setup coverage badge
