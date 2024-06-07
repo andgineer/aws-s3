@@ -52,13 +52,13 @@ ListObjectsAsync - это асинхронный инструмент для п�
     python -m pip install --user pipx
     ```
 
-## Установка `aws-s3`:
+## Установка `async-s3`:
 В терминале (командной строке) выполните:
 
 ```bash
-pipx install aws-s3
+pipx install async-s3
 ```
 
 ### Детали реализации
 
-[ListObjectsAsync][aws_s3]
+[ListObjectsAsync][async_s3]

@@ -6,7 +6,7 @@ S3 Bucket helper utils. Async list objects by folders
 
 # Documentation
 
-[Aws S3](https://andgineer.github.io/aws-s3/)
+[Async S3](https://andgineer.github.io/aws-s3/)
 
 # Developers
 

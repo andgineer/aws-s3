@@ -48,14 +48,14 @@ You can control the depth of recursion by specifying the max_depth parameter, by
     python -m pip install --user pipx
     ```
 
-## Installing `aws-s3`:
+## Installing `async-s3`:
 In the terminal (command prompt), execute:
 
 ```bash
-pipx install aws-s3
+pipx install async-s3
 ```
 
 ### Implementation Details
 
-[ListObjectsAsync][aws_s3]
+[ListObjectsAsync][async_s3]
 
