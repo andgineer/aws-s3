@@ -19,8 +19,8 @@ email = "andrey@sorokin.engineer"
 file = "LICENSE.txt"
 
 [project.urls]
-Homepage = "https://andgineer.github.io/aws-s3/"
-Documentation = "https://andgineer.github.io/aws-s3/"
+Homepage = "https://andgineer.github.io/async-s3/"
+Documentation = "https://andgineer.github.io/async-s3/"
 
 [tool.setuptools]
 packages = "find:"

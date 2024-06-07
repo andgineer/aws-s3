@@ -1,4 +1,4 @@
-"""aws-s3."""
+"""async-s3."""
 
 from pathlib import Path
 
@@ -11,7 +11,7 @@ OUTPUT_FILE_DEFAULT = "output"
 
 
 @click.command()
-@click.version_option(version=__version__, prog_name="aws-s3")
+@click.version_option(version=__version__, prog_name="as3")
 @click.argument("input_file", type=click.Path(exists=True))
 @click.argument("output_file", type=click.Path(), required=False)
 @click.option("--force", is_flag=True, help="Overwrite the output file if it exists.")

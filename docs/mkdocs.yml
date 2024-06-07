@@ -1,11 +1,11 @@
 # yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
 site_name: async_s3
-site_url: https://andgineer.github.io/aws-s3
+site_url: https://andgineer.github.io/async-s3
 site_author: Andrey Sorokin
 
 # Repository
 repo_name: async_s3
-repo_url: https://github.com/andgineer/aws-s3
+repo_url: https://github.com/andgineer/async-s3
 edit_uri: edit/master/docs
 docs_dir: 'src/LANGUAGE'
 site_dir: '../site/SITE_PREFIX'
@@ -61,8 +61,8 @@ theme:
 extra:
   alternate:
     - name: English
-      link: /aws-s3/
+      link: /async-s3/
       lang: en
     - name: Русский
-      link: /aws-s3/ru/
+      link: /async-s3/ru/
       lang: ru
