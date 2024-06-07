@@ -44,4 +44,4 @@ exclude = [ "**/node_modules", "**/__pycache__",]
 include = [ "README.md", "LICENSE.txt",]
 
 [tool.hatch.version]
-path = "src/aws_s3/__about__.py"
+path = "src/async_s3/__about__.py"

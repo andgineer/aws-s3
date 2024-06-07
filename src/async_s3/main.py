@@ -15,7 +15,7 @@ OUTPUT_FILE_DEFAULT = "output"
 @click.argument("input_file", type=click.Path(exists=True))
 @click.argument("output_file", type=click.Path(), required=False)
 @click.option("--force", is_flag=True, help="Overwrite the output file if it exists.")
-def aws_s3(input_file: str, output_file: str, force: bool) -> None:
+def as3(input_file: str, output_file: str, force: bool) -> None:
     """
     `INPUT_FILE` to `OUTPUT_FILE`.
     """
@@ -32,4 +32,4 @@ def aws_s3(input_file: str, output_file: str, force: bool) -> None:
 
 
 if __name__ == "__main__":  # pragma: no cover
-    aws_s3()  # pylint: disable=no-value-for-parameter
+    as3()  # pylint: disable=no-value-for-parameter
