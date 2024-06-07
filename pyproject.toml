@@ -5,8 +5,8 @@ build-backend = "hatchling.build"
 [project]
 name = "aws-s3"
 dynamic = [ "version",]
-description = "S3 Bucket helper utils. Async list objects by folders"
-keywords = [ "one", "two",]
+description = "S3 Bucket helper utils. Async list objects by folders."
+keywords = [ "async", "aws", "s3", "bucket", "list-objects", "folders",]
 classifiers = [ "Programming Language :: Python :: 3", "License :: OSI Approved :: MIT License", "Operating System :: OS Independent",]
 readme = "README.md"
 requires-python = ">=3.9"
