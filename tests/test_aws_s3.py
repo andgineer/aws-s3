@@ -1,5 +1,5 @@
-from aws_s3 import __version__
-from aws_s3.main import aws_s3
+from async_s3 import __version__
+from async_s3.main import aws_s3
 from click.testing import CliRunner
 
 

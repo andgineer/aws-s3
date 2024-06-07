@@ -3,7 +3,7 @@ requires = [ "hatchling",]
 build-backend = "hatchling.build"
 
 [project]
-name = "aws-s3"
+name = "async-s3"
 dynamic = [ "version",]
 description = "S3 Bucket helper utils. Async list objects by folders."
 keywords = [ "async", "aws", "s3", "bucket", "list-objects", "folders",]

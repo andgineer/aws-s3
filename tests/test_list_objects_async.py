@@ -1,12 +1,12 @@
 import pytest
-from aws_s3 import ListObjectsAsync
+from async_s3 import ListObjectsAsync
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("mock_s3_structure", [
     {
         "bucket_structure_file": "bucket_keys.yml",
-        "get_s3_client_function": "aws_s3.list_objects_async.get_s3_client"
+        "get_s3_client_function": "async_s3.list_objects_async.get_s3_client"
     }
 ], indirect=True)
 async def test_list_objects(mock_s3_structure):

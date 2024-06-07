@@ -1,5 +1,5 @@
 import asyncio
-from aws_s3 import ListObjectsAsync
+from async_s3 import ListObjectsAsync
 
 
 async def main():

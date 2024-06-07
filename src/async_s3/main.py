@@ -4,7 +4,7 @@ from pathlib import Path
 
 import rich_click as click
 
-from aws_s3 import __version__
+from async_s3 import __version__
 
 click.rich_click.USE_MARKDOWN = True
 OUTPUT_FILE_DEFAULT = "output"
