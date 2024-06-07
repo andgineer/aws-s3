@@ -104,14 +104,21 @@ def fake_s3_server():
 
 
 @pytest.fixture(scope="session")
-def mock_s3_structure(fake_s3_server):
+def mock_s3_structure(request, fake_s3_server):
     s3_client, s3_async_client_factory = fake_s3_server
     HERE = pathlib.Path(__file__).parent
-    with (HERE / "resources" / "bucket_keys.yml").open("r") as file:
+
+    # Load parameters
+    bucket_structure_file = request.param.get("bucket_structure_file")
+    get_s3_client_function = request.param.get("get_s3_client_function")
+    bucket_name = request.param.get("bucket_name", "mock-bucket")
+
+    with (HERE / "resources" / bucket_structure_file).open("r") as file:
         structure = yaml.safe_load(file)
-    bucket_name = "mock-bucket"
+
     s3_client.create_bucket(Bucket=bucket_name)
     create_s3_folder(bucket_name, structure, s3_client)
-    with patch("aws_s3.list_objects_async.get_s3_client") as mock_client:
+
+    with patch(get_s3_client_function) as mock_client:
         mock_client.side_effect = s3_async_client_factory
         yield
