@@ -5,9 +5,10 @@
 | Name                                  |    Stmts |     Miss |   Cover |   Missing |
 |-------------------------------------- | -------: | -------: | ------: | --------: |
 | src/async\_s3/\_\_about\_\_.py        |        1 |        0 |    100% |           |
-| src/async\_s3/list\_objects\_async.py |       46 |        4 |     91% | 13, 18-22 |
-| src/async\_s3/main.py                 |       43 |       23 |     47% |20, 32-38, 50-55, 60-64, 69-70, 74, 78-80 |
-|                             **TOTAL** |   **90** |   **27** | **70%** |           |
+| src/async\_s3/group\_by\_prefix.py    |       52 |        1 |     98% |        64 |
+| src/async\_s3/list\_objects\_async.py |       50 |        5 |     90% |15, 20-24, 59 |
+| src/async\_s3/main.py                 |       47 |       22 |     53% |52-58, 70-75, 80-84, 89-90, 97, 104-106 |
+|                             **TOTAL** |  **150** |   **28** | **81%** |           |
 
 
 ## Setup coverage badge
