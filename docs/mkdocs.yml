@@ -66,3 +66,8 @@ extra:
     - name: Русский
       link: /async-s3/ru/
       lang: ru
+
+nav:
+  - index.md
+  - installation.md
+  - as3.md
