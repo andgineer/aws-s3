@@ -7,6 +7,7 @@ recursive directory traversal with depth control.
 
 ## Features
 - Asynchronous Operations: Utilizes asyncio for non-blocking IO operations.
+- Groups folders to reduce the number of API calls.
 - Paginated Results: Handles S3 pagination internally to provide a efficient traversal of long S3 objects lists.
 - Recursive Traversal: Supports recursive listing of objects with controllable depth control.
 - Retries: AUtilize AWS retry strategies.
@@ -23,6 +24,27 @@ pipx install async-s3
 ```
 
 ### Implementation Details
+
+[Grouping prefixes][async_s3.group_by_prefix.group_by_prefix] are used to reduce the number of API calls. 
+Of course, this is not always possible, but in the worst cases this is about 50 one-symbol groups of all possible
+characters in the object key. And in most cases, it is much less like
+
+```
+folder/0123.jpg
+folder/0124.jpg
+folder/0125.jpg
+..
+folder/9926.jpg
+```
+
+we can compress just to ten groups:
+    
+```
+folder/0
+folder/1
+...
+folder/9
+```
 
 [ListObjectsAsync][async_s3]
 
