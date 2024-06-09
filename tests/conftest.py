@@ -163,3 +163,4 @@ def s3_client_proxy(fake_s3_server, monkeypatch):
 
     monkeypatch.setattr("async_s3.list_objects_async.get_s3_client", lambda: mock_client)
     yield mock_client
+    asyncio.run(real_client.__aexit__(None, None, None))
