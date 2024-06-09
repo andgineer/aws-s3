@@ -18,6 +18,10 @@ Use [pre-commit](https://pre-commit.com/#install) hooks for code quality:
 
     pre-commit install
 
+## Allure test report
+
+* [Allure report](https://andgineer.github.io/async-s3/builds/tests/)
+
 # Scripts
 
 Install [invoke](https://docs.pyinvoke.org/en/stable/) preferably with [pipx](https://pypa.github.io/pipx/):

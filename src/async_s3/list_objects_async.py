@@ -55,7 +55,7 @@ class ListObjectsAsync:
             if "Delimiter" in params:
                 prefixes.extend([prefix["Prefix"] for prefix in page.get("CommonPrefixes", [])])
 
-        if max_folders and (len(prefixes) > max_folders):
+        if max_folders is not None and (len(prefixes) > max_folders):
             prefixes = [(key, -1) for key in group_by_prefix(prefixes, max_folders)]
         else:
             prefixes = [
