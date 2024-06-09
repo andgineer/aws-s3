@@ -1,9 +1,10 @@
+import asyncio
 import os
 import pathlib
 import socket
 import subprocess
 import time
-from unittest.mock import patch
+from unittest.mock import patch, Mock, call, MagicMock
 
 import pytest
 import yaml
@@ -11,6 +12,7 @@ import yaml
 import boto3
 import aiobotocore
 import aiobotocore.session
+from async_s3 import ListObjectsAsync
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -122,3 +124,42 @@ def mock_s3_structure(request, fake_s3_server):
     with patch(get_s3_client_function) as mock_client:
         mock_client.side_effect = s3_async_client_factory
         yield
+
+
+class MockS3Client:
+    def __init__(self, real_client):
+        self.real_client = real_client
+        self.calls = []
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    def get_paginator(self, operation_name):
+        self.calls.append(call.get_paginator(operation_name))
+        paginator = MagicMock()
+        paginator.paginate = self._mock_paginate()
+        return paginator
+
+    def _mock_paginate(self):
+        async def async_generator(**kwargs):
+            self.calls.append(call.get_paginator().paginate(**kwargs))
+            async for result in self.real_client.get_paginator('list_objects_v2').paginate(**kwargs):
+                yield result
+        return async_generator
+
+
+@pytest.fixture
+def s3_client_proxy(fake_s3_server, monkeypatch):
+    """Record calls to the moto server.
+
+    We use real external AWS server (moto) so we do not need mock but proxy.
+    """
+    _, s3_async_client_factory = fake_s3_server
+    real_client = asyncio.run(s3_async_client_factory().__aenter__())
+    mock_client = MockS3Client(real_client)
+
+    monkeypatch.setattr("async_s3.list_objects_async.get_s3_client", lambda: mock_client)
+    yield mock_client

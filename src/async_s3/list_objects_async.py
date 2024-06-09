@@ -1,6 +1,6 @@
 import asyncio
 import functools
-from typing import Iterable, Any, Dict, Optional, Tuple, List
+from typing import Iterable, Any, Dict, Optional, Tuple
 
 import aiobotocore.session
 import aiobotocore.client
@@ -41,7 +41,7 @@ class ListObjectsAsync:
         prefixes = []
 
         params = {"Bucket": self._bucket, "Prefix": prefix}
-        if max_depth is None or current_depth < max_depth:
+        if (current_depth != -1) and (max_depth is None or current_depth < max_depth):
             params["Delimiter"] = "/"
 
         async for page in paginator.paginate(**params):
@@ -58,7 +58,9 @@ class ListObjectsAsync:
         if max_folders and (len(prefixes) > max_folders):
             prefixes = [(key, -1) for key in group_by_prefix(prefixes, max_folders)]
         else:
-            prefixes = [(key, current_depth + 1) for key in prefixes]
+            prefixes = [
+                (key, -1 if current_depth == -1 else current_depth + 1) for key in prefixes
+            ]
         return objects, prefixes
 
     async def list_objects(
@@ -71,7 +73,9 @@ class ListObjectsAsync:
         Otherwise, the folders are grouped by prefixes before loading in separate requests.
         Try to group in the given number of folders if possible.
         """
-        objects: List[Dict[str, Any]] = []
+        # if we have items with the same prefixes as folders we could have duplicates
+        # so we use dict to clear them out
+        objects: Dict[str, Dict[str, Any]] = {}
         tasks = set()
 
         async with get_s3_client() as s3_client:
@@ -83,7 +87,7 @@ class ListObjectsAsync:
 
                 for task in done:
                     files, folders = await task
-                    objects.extend(files)
+                    objects.update({file["Key"]: file for file in files})
 
                     for folder, level in folders:
                         tasks.add(
@@ -94,4 +98,4 @@ class ListObjectsAsync:
                             )
                         )
 
-        return objects
+        return list(objects.values())
