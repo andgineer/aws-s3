@@ -121,7 +121,7 @@ jobs:
       uses: coverallsapp/github-action@v2
 
     - name: Upload Coverage to Codecov
-      if: ${{ matrix.python-version == 3.11 && matrix.platform == 'ubuntu-latest' }}
+      if: always()
       uses: codecov/codecov-action@v4.0.1
       env:
         token: ${{ secrets.CODECOV_TOKEN }}
