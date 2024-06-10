@@ -3,7 +3,7 @@ from unittest.mock import patch, AsyncMock
 import pytest
 
 from async_s3 import __version__
-from async_s3.main import as3
+from async_s3.main import as3, list_objects_async
 from click.testing import CliRunner
 
 
@@ -66,3 +66,47 @@ def test_as3_invalid_s3_url_du():
 
     assert result.exit_code != 0
     assert "Invalid S3 URL. It should start with s3://" in result.output
+
+
+@pytest.mark.asyncio
+async def test_list_objects_async():
+    mock_result = [
+        {"Key": "file1.txt", "Size": 1234},
+        {"Key": "file2.txt", "Size": 5678},
+    ]
+
+    with patch('async_s3.main.ListObjectsAsync') as MockListObjectsAsync:
+        instance = MockListObjectsAsync.return_value
+        instance.list_objects = AsyncMock(return_value=mock_result)
+
+        s3_url = "s3://bucket/key"
+        max_depth = 1
+        max_folders = 1
+        repeat = 1
+
+        result = await list_objects_async(s3_url, max_depth, max_folders, repeat)
+
+        assert result == mock_result
+        instance.list_objects.assert_awaited_once_with('key', max_depth=max_depth, max_folders=max_folders)
+
+@pytest.mark.asyncio
+async def test_list_objects_async_repeat():
+    mock_result = [
+        {"Key": "file1.txt", "Size": 1234},
+        {"Key": "file2.txt", "Size": 5678},
+    ]
+
+    with patch('async_s3.main.ListObjectsAsync') as MockListObjectsAsync:
+        instance = MockListObjectsAsync.return_value
+        instance.list_objects = AsyncMock(return_value=mock_result)
+
+        s3_url = "s3://bucket/key"
+        max_depth = 1
+        max_folders = 1
+        repeat = 3
+
+        result = await list_objects_async(s3_url, max_depth, max_folders, repeat)
+
+        assert result == mock_result
+        assert instance.list_objects.call_count == repeat
+        instance.list_objects.assert_awaited_with('key', max_depth=max_depth, max_folders=max_folders)
