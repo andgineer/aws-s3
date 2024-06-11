@@ -30,3 +30,7 @@
 
 ## Installing `async-s3`:
 In the terminal (command prompt), execute:
+
+```bash
+pipx install async-s3
+```

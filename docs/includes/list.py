@@ -6,7 +6,7 @@ async def main():
     bucket_name = "your-bucket-name"
     prefix = "your-prefix/"
     list_objects = ListObjectsAsync(bucket_name)
-    objects = await list_objects.list_objects(prefix=prefix, max_depth=2)
+    objects = await list_objects.list_objects(prefix=prefix, max_depth=2, max_folders=20)
 
     for obj in objects:
         print(obj["Key"])
