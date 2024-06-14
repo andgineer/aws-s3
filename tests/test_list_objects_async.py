@@ -44,7 +44,7 @@ async def test_list_objects_functional(mock_s3_structure):
 async def test_list_objects_with_max_depth(s3_client_proxy, mock_s3_structure):
     walker = ListObjectsAsync("mock-bucket")
 
-    objects = await walker.list_objects(prefix="root/", max_depth=1)
+    objects = await walker.list_objects(prefix="root/", max_depth=2)
     expected_keys = {
         'root/data01/image01.png',
         'root/data01/images/img11.jpg',
@@ -70,13 +70,27 @@ async def test_list_objects_with_max_depth(s3_client_proxy, mock_s3_structure):
         call.get_paginator("list_objects_v2"),
         call.get_paginator().paginate(Bucket="mock-bucket", Prefix="root/", Delimiter="/"),
         call.get_paginator('list_objects_v2'),
-        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data01/'),
+        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data01/', Delimiter='/'),
         call.get_paginator('list_objects_v2'),
-        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data02/'),
+        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data02/', Delimiter='/'),
         call.get_paginator('list_objects_v2'),
-        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data03/'),
+        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data03/', Delimiter='/'),
         call.get_paginator('list_objects_v2'),
-        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data04/'),
+        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data04/', Delimiter='/'),
+        call.get_paginator('list_objects_v2'),
+        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data01/archives/'),
+        call.get_paginator('list_objects_v2'),
+        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data01/docs/'),
+        call.get_paginator('list_objects_v2'),
+        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data01/images/'),
+        call.get_paginator('list_objects_v2'),
+        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data01/temp/'),
+        call.get_paginator('list_objects_v2'),
+        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data02/logs/'),
+        call.get_paginator('list_objects_v2'),
+        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data02/reports/'),
+        call.get_paginator('list_objects_v2'),
+        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data02/scripts/'),
     ]
     assert s3_client_proxy.calls == expected_calls
 
@@ -118,26 +132,12 @@ async def test_list_objects_with_max_folders(s3_client_proxy, mock_s3_structure)
         call.get_paginator("list_objects_v2"),
         call.get_paginator().paginate(Bucket="mock-bucket", Prefix="root/", Delimiter="/"),
         call.get_paginator('list_objects_v2'),
-        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data01/', Delimiter='/'),
+        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data01'),
         call.get_paginator('list_objects_v2'),
-        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data02/', Delimiter='/'),
+        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data02'),
         call.get_paginator('list_objects_v2'),
-        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data03/', Delimiter='/'),
+        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data03'),
         call.get_paginator('list_objects_v2'),
-        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data04/', Delimiter='/'),
-        call.get_paginator('list_objects_v2'),
-        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data01/a'),
-        call.get_paginator('list_objects_v2'),
-        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data01/d'),
-        call.get_paginator('list_objects_v2'),
-        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data01/i'),
-        call.get_paginator('list_objects_v2'),
-        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data01/t'),
-        call.get_paginator('list_objects_v2'),
-        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data02/l'),
-        call.get_paginator('list_objects_v2'),
-        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data02/r'),
-        call.get_paginator('list_objects_v2'),
-        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data02/s'),
+        call.get_paginator().paginate(Bucket='mock-bucket', Prefix='root/data04'),
     ]
     assert s3_client_proxy.calls == expected_calls
