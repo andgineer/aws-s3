@@ -1,12 +1,9 @@
 import asyncio
-from async_s3 import ListObjectsAsync
+from async_s3 import S3BucketObjects
 
 
 async def main():
-    bucket_name = "your-bucket-name"
-    prefix = "your-prefix/"
-    list_objects = ListObjectsAsync(bucket_name)
-    objects = await list_objects.list_objects(prefix=prefix, max_depth=2, max_folders=20)
+    objects = await S3BucketObjects("my-bucket").list("my-prefix/", max_depth=2, max_folders=20)
 
     for obj in objects:
         print(obj["Key"])

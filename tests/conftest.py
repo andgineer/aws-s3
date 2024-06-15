@@ -12,7 +12,7 @@ import yaml
 import boto3
 import aiobotocore
 import aiobotocore.session
-from async_s3 import ListObjectsAsync
+from async_s3 import S3BucketObjects
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -161,6 +161,6 @@ def s3_client_proxy(fake_s3_server, monkeypatch):
     real_client = asyncio.run(s3_async_client_factory().__aenter__())
     mock_client = MockS3Client(real_client)
 
-    monkeypatch.setattr("async_s3.list_objects_async.get_s3_client", lambda: mock_client)
+    monkeypatch.setattr("async_s3.s3_bucket_objects.get_s3_client", lambda: mock_client)
     yield mock_client
     asyncio.run(real_client.__aexit__(None, None, None))

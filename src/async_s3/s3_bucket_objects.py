@@ -27,7 +27,7 @@ def get_s3_client() -> aiobotocore.client.AioBaseClient:
     return session.create_client("s3", config=config)
 
 
-class ListObjectsAsync:
+class S3BucketObjects:
     def __init__(self, bucket: str) -> None:
         self._bucket = bucket
         self.semaphore = asyncio.Semaphore(MAX_CONCURRENT_TASKS)
@@ -85,18 +85,22 @@ class ListObjectsAsync:
                         active_tasks,
                     )
                 )
-                active_tasks.add(task)
-                task.add_done_callback(lambda t: self._task_done(t, active_tasks))
             except Exception as e:
                 self.semaphore.release()
                 raise e
+            active_tasks.add(task)
+            task.add_done_callback(lambda t: self._task_done(t, active_tasks, queue))
 
-    async def pages(
-        self, prefix: str = "/", max_depth: Optional[int] = None, max_folders: Optional[int] = None
+    async def iter(
+        self,
+        prefix: str = "/",
+        *,
+        max_depth: Optional[int] = None,
+        max_folders: Optional[int] = None,
     ) -> AsyncIterator[List[Dict[str, Any]]]:
         """Generator that yields objects in the bucket with the given prefix.
 
-        Yield objects by separate pages (list of AWS S3 object dicts).
+        Yield objects by partial chunks (list of AWS S3 object dicts) as they are collected from AWS asynchronously.
 
         max_depth: The maximum folders depth to traverse in separate requests. If None, traverse all levels.
         max_folders: The maximum number of folders to load in separate requests. If None, requests all folders.
@@ -114,30 +118,55 @@ class ListObjectsAsync:
         active_tasks: Set[asyncio.Task[None]] = set()
 
         async with get_s3_client() as s3_client:
-            root_task = asyncio.create_task(
-                self._list_objects(
-                    s3_client, prefix, 0, max_depth, max_folders, objects_keys, queue, active_tasks
+            await self.semaphore.acquire()
+            try:
+                root_task = asyncio.create_task(
+                    self._list_objects(
+                        s3_client,
+                        prefix,
+                        0,
+                        max_depth,
+                        max_folders,
+                        objects_keys,
+                        queue,
+                        active_tasks,
+                    )
                 )
-            )
+            except Exception as e:
+                self.semaphore.release()
+                raise e
             active_tasks.add(root_task)
-            root_task.add_done_callback(lambda t: self._task_done(t, active_tasks))
+            root_task.add_done_callback(lambda t: self._task_done(t, active_tasks, queue))
 
             while active_tasks:
                 try:
-                    yield queue.get_nowait()
+                    page = await queue.get()
+                    if page:
+                        yield page
                 except asyncio.QueueEmpty:
                     await asyncio.sleep(0)
 
-            if active_tasks:
-                await asyncio.gather(*active_tasks)
-
-    def _task_done(self, task: asyncio.Task[None], active_tasks: Set[asyncio.Task[None]]) -> None:
+    def _task_done(
+        self,
+        task: asyncio.Task[None],
+        active_tasks: Set[asyncio.Task[None]],
+        queue: asyncio.Queue[List[Dict[str, Any]]],
+    ) -> None:
         """Callback for when a task is done."""
-        active_tasks.discard(task)
-        self.semaphore.release()
 
-    async def list_objects(
-        self, prefix: str = "/", max_depth: Optional[int] = None, max_folders: Optional[int] = None
+        async def async_task_done() -> None:
+            active_tasks.discard(task)
+            self.semaphore.release()
+            await queue.put([])  # signal that the task is done
+
+        asyncio.create_task(async_task_done())
+
+    async def list(
+        self,
+        prefix: str = "/",
+        *,
+        max_depth: Optional[int] = None,
+        max_folders: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         """List all objects in the bucket with the given prefix.
 
@@ -147,6 +176,6 @@ class ListObjectsAsync:
         Try to group to the given `max_folders` if possible.
         """
         objects = []
-        async for objects_page in self.pages(prefix, max_depth, max_folders):
+        async for objects_page in self.iter(prefix, max_depth=max_depth, max_folders=max_folders):
             objects.extend(objects_page)
         return objects

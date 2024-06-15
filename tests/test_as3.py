@@ -75,9 +75,9 @@ async def test_list_objects_async():
         {"Key": "file2.txt", "Size": 5678},
     ]
 
-    with patch('async_s3.main.ListObjectsAsync') as MockListObjectsAsync:
-        instance = MockListObjectsAsync.return_value
-        instance.list_objects = AsyncMock(return_value=mock_result)
+    with patch('async_s3.main.S3BucketObjects') as MockS3BucketObjects:
+        instance = MockS3BucketObjects.return_value
+        instance.list = AsyncMock(return_value=mock_result)
 
         s3_url = "s3://bucket/key"
         max_depth = 1
@@ -87,7 +87,7 @@ async def test_list_objects_async():
         result = await list_objects_async(s3_url, max_depth, max_folders, repeat)
 
         assert result == mock_result
-        instance.list_objects.assert_awaited_once_with('key', max_depth=max_depth, max_folders=max_folders)
+        instance.list.assert_awaited_once_with('key', max_depth=max_depth, max_folders=max_folders)
 
 @pytest.mark.asyncio
 async def test_list_objects_async_repeat():
@@ -96,9 +96,9 @@ async def test_list_objects_async_repeat():
         {"Key": "file2.txt", "Size": 5678},
     ]
 
-    with patch('async_s3.main.ListObjectsAsync') as MockListObjectsAsync:
-        instance = MockListObjectsAsync.return_value
-        instance.list_objects = AsyncMock(return_value=mock_result)
+    with patch('async_s3.main.S3BucketObjects') as MockS3BucketObjects:
+        instance = MockS3BucketObjects.return_value
+        instance.list = AsyncMock(return_value=mock_result)
 
         s3_url = "s3://bucket/key"
         max_depth = 1
@@ -108,5 +108,5 @@ async def test_list_objects_async_repeat():
         result = await list_objects_async(s3_url, max_depth, max_folders, repeat)
 
         assert result == mock_result
-        assert instance.list_objects.call_count == repeat
-        instance.list_objects.assert_awaited_with('key', max_depth=max_depth, max_folders=max_folders)
+        assert instance.list.call_count == repeat
+        instance.list.assert_awaited_with('key', max_depth=max_depth, max_folders=max_folders)

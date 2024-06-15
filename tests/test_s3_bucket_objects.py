@@ -1,19 +1,19 @@
 from unittest.mock import call
 
 import pytest
-from async_s3 import ListObjectsAsync
+from async_s3 import S3BucketObjects
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("mock_s3_structure", [
     {
         "bucket_structure_file": "bucket_keys.yml",
-        "get_s3_client_function": "async_s3.list_objects_async.get_s3_client"
+        "get_s3_client_function": "async_s3.s3_bucket_objects.get_s3_client"
     }
 ], indirect=True)
-async def test_list_objects_functional(mock_s3_structure):
-    walker = ListObjectsAsync("mock-bucket")
-    keys = sorted([object["Key"] for object in await walker.list_objects(prefix="root/")])
+async def test_s3_bucket_objects_functional(mock_s3_structure):
+    walker = S3BucketObjects("mock-bucket")
+    keys = sorted([object["Key"] for object in await walker.list(prefix="root/")])
 
     expected_keys = sorted([
         'root/data01/image01.png',
@@ -37,14 +37,14 @@ async def test_list_objects_functional(mock_s3_structure):
 @pytest.mark.parametrize("mock_s3_structure", [
     {
         "bucket_structure_file": "bucket_keys.yml",
-        "get_s3_client_function": "async_s3.list_objects_async.get_s3_client",
+        "get_s3_client_function": "async_s3.s3_bucket_objects.get_s3_client",
         "bucket_name": "mock-bucket"
     }
 ], indirect=True)
-async def test_list_objects_with_max_depth(s3_client_proxy, mock_s3_structure):
-    walker = ListObjectsAsync("mock-bucket")
+async def test_s3_bucket_objects_with_max_depth(s3_client_proxy, mock_s3_structure):
+    walker = S3BucketObjects("mock-bucket")
 
-    objects = await walker.list_objects(prefix="root/", max_depth=2)
+    objects = await walker.list(prefix="root/", max_depth=2)
     expected_keys = {
         'root/data01/image01.png',
         'root/data01/images/img11.jpg',
@@ -99,14 +99,14 @@ async def test_list_objects_with_max_depth(s3_client_proxy, mock_s3_structure):
 @pytest.mark.parametrize("mock_s3_structure", [
     {
         "bucket_structure_file": "bucket_keys.yml",
-        "get_s3_client_function": "async_s3.list_objects_async.get_s3_client",
+        "get_s3_client_function": "async_s3.s3_bucket_objects.get_s3_client",
         "bucket_name": "mock-bucket"
     }
 ], indirect=True)
-async def test_list_objects_with_max_folders(s3_client_proxy, mock_s3_structure):
-    walker = ListObjectsAsync("mock-bucket")
+async def test_s3_bucket_objects_with_max_folders(s3_client_proxy, mock_s3_structure):
+    walker = S3BucketObjects("mock-bucket")
 
-    objects = await walker.list_objects(prefix="root/", max_folders=2)
+    objects = await walker.list(prefix="root/", max_folders=2)
     expected_keys = {
         'root/data01/image01.png',
         'root/data01/images/img11.jpg',

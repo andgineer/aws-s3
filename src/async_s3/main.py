@@ -5,7 +5,7 @@ import time
 from typing import Iterable, Dict, Any, Optional, Callable
 import rich_click as click
 import botocore.exceptions
-from async_s3.list_objects_async import ListObjectsAsync
+from async_s3.s3_bucket_objects import S3BucketObjects
 from async_s3 import __version__
 
 
@@ -137,13 +137,13 @@ async def list_objects_async(
         f"{click.style(' times.', fg='green')}"
     )
     bucket, key = s3_url[len(S3PROTO) :].split("/", 1)
-    s3_list = ListObjectsAsync(bucket)
+    s3_list = S3BucketObjects(bucket)
 
     total_time = 0.0
     for _ in range(repeat):
         start_time = time.time()
         try:
-            result = await s3_list.list_objects(key, max_depth=max_depth, max_folders=max_folders)
+            result = await s3_list.list(key, max_depth=max_depth, max_folders=max_folders)
         except botocore.exceptions.ClientError as exc:
             error(f"Error: {exc}")
         end_time = time.time()
