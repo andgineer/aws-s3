@@ -3,7 +3,7 @@ from async_s3 import S3BucketObjects
 
 
 async def main():
-    objects = await S3BucketObjects("my-bucket").list("my-prefix/", max_depth=2, max_folders=20)
+    objects = await S3BucketObjects("my-bucket").list("my-prefix/", max_level=2, max_folders=20)
 
     for obj in objects:
         print(obj["Key"])

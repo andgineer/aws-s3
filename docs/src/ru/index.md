@@ -18,7 +18,7 @@
 ```python
 --8<-- "list.py"
 ```
-Вы можете контролировать глубину рекурсии, указывая параметр max_depth, по умолчанию глубина не ограничена.
+Вы можете контролировать глубину рекурсии, указывая параметр max_level, по умолчанию глубина не ограничена.
 
 С помощью `max_folders` вы можете группировать каталоги по префиксам для уменьшения количества API вызовов.
 
@@ -27,7 +27,7 @@
 Обрабатывайте объекты асинхронно, одновременно с получением списка объектов из AWS.
 
 ```python
-async for page in S3BucketObjects(bucket='my-bucket').iter("my-prefix/", max_depth=2, max_folders=10):
+async for page in S3BucketObjects(bucket='my-bucket').iter("my-prefix/", max_level=2, max_folders=10):
     for obj in page:
         print(obj['Key'])
 ```

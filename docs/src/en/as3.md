@@ -5,7 +5,7 @@ Simple utility to debug classes from the package.
 For example
 
 ```bash
-as3 du s3://my-bucket/my-key -d 1 -f 20 -r 3
+as3 du s3://my-bucket/my-key -l 1 -f 20 -r 3
 ```
 
 Show the size and number of objects in `s3://my-bucket/my-key`.

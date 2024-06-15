@@ -80,14 +80,16 @@ async def test_list_objects_async():
         instance.list = AsyncMock(return_value=mock_result)
 
         s3_url = "s3://bucket/key"
-        max_depth = 1
+        max_level = 1
         max_folders = 1
         repeat = 1
+        parallelism = 100
+        delimiter = '/'
 
-        result = await list_objects_async(s3_url, max_depth, max_folders, repeat)
+        result = await list_objects_async(s3_url, max_level, max_folders, repeat, parallelism, delimiter)
 
         assert result == mock_result
-        instance.list.assert_awaited_once_with('key', max_depth=max_depth, max_folders=max_folders)
+        instance.list.assert_awaited_once_with('key', max_level=max_level, max_folders=max_folders, delimiter=delimiter)
 
 @pytest.mark.asyncio
 async def test_list_objects_async_repeat():
@@ -101,12 +103,14 @@ async def test_list_objects_async_repeat():
         instance.list = AsyncMock(return_value=mock_result)
 
         s3_url = "s3://bucket/key"
-        max_depth = 1
+        max_level = 1
         max_folders = 1
         repeat = 3
+        parallelism = 100
+        delimiter = '/'
 
-        result = await list_objects_async(s3_url, max_depth, max_folders, repeat)
+        result = await list_objects_async(s3_url, max_level, max_folders, repeat, parallelism, delimiter)
 
         assert result == mock_result
         assert instance.list.call_count == repeat
-        instance.list.assert_awaited_with('key', max_depth=max_depth, max_folders=max_folders)
+        instance.list.assert_awaited_with('key', max_level=max_level, max_folders=max_folders, delimiter=delimiter)

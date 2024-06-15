@@ -5,7 +5,7 @@
 Например
 
 ```bash
-as3 du s3://my-bucket/my-key -d 1 -f 20 -r 3
+as3 du s3://my-bucket/my-key -l 1 -f 20 -r 3
 ```
 
 Покажет размер и количество объектов в `s3://my-bucket/my-key`.

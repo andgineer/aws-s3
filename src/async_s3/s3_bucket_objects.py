@@ -9,7 +9,7 @@ from botocore.config import Config
 from async_s3.group_by_prefix import group_by_prefix
 
 
-MAX_CONCURRENT_TASKS = 100
+DEFAULT_PARALLELISM = 100
 
 
 @functools.lru_cache()
@@ -28,17 +28,23 @@ def get_s3_client() -> aiobotocore.client.AioBaseClient:
 
 
 class S3BucketObjects:
-    def __init__(self, bucket: str) -> None:
+    def __init__(self, bucket: str, *, parallelism: int = DEFAULT_PARALLELISM) -> None:
+        """Initialize the S3BucketObjects object.
+
+        bucket: The name of the S3 bucket.
+        parallelism: The maximum number of concurrent requests to AWS S3.
+        """
         self._bucket = bucket
-        self.semaphore = asyncio.Semaphore(MAX_CONCURRENT_TASKS)
+        self.semaphore = asyncio.Semaphore(parallelism)
 
     async def _list_objects(  # pylint: disable=too-many-arguments, too-many-locals
         self,
         s3_client: aiobotocore.client.AioBaseClient,
         prefix: str,
         current_depth: int,
-        max_depth: Optional[int],
+        max_level: Optional[int],
         max_folders: Optional[int],
+        delimiter: str,
         objects_keys: Set[str],
         queue: asyncio.Queue[List[Dict[str, Any]]],
         active_tasks: Set[asyncio.Task[None]],
@@ -48,15 +54,15 @@ class S3BucketObjects:
         prefixes = []
 
         params = {"Bucket": self._bucket, "Prefix": prefix}
-        if (current_depth != -1) and (max_depth is None or current_depth < max_depth):
-            params["Delimiter"] = "/"
+        if (current_depth != -1) and (max_level is None or current_depth < max_level):
+            params["Delimiter"] = delimiter
 
         async for page in paginator.paginate(**params):
             objects = page.get("Contents", [])
             new_keys = {
                 obj["Key"]
                 for obj in objects
-                if not obj["Key"].endswith("/") and obj["Key"] not in objects_keys
+                if not obj["Key"].endswith(delimiter) and obj["Key"] not in objects_keys
             }
             cleared_objects = [obj for obj in objects if obj["Key"] in new_keys]
             objects_keys.update(new_keys)
@@ -78,8 +84,9 @@ class S3BucketObjects:
                         s3_client,
                         folder,
                         level,
-                        max_depth,
+                        max_level,
                         max_folders,
+                        delimiter,
                         objects_keys,
                         queue,
                         active_tasks,
@@ -95,17 +102,19 @@ class S3BucketObjects:
         self,
         prefix: str = "/",
         *,
-        max_depth: Optional[int] = None,
+        max_level: Optional[int] = None,
         max_folders: Optional[int] = None,
+        delimiter: str = "/",
     ) -> AsyncIterator[List[Dict[str, Any]]]:
         """Generator that yields objects in the bucket with the given prefix.
 
         Yield objects by partial chunks (list of AWS S3 object dicts) as they are collected from AWS asynchronously.
 
-        max_depth: The maximum folders depth to traverse in separate requests. If None, traverse all levels.
+        max_level: The maximum folders depth to traverse in separate requests. If None, traverse all levels.
         max_folders: The maximum number of folders to load in separate requests. If None, requests all folders.
         Otherwise, the folders are grouped by prefixes before loading in separate requests.
         Try to group in the given number of folders if possible.
+        delimiter: The delimiter for "folders".
         """
         # if we group by prefixes, some objects may be listed multiple times
         # to avoid this, we store the keys of the objects already listed
@@ -125,8 +134,9 @@ class S3BucketObjects:
                         s3_client,
                         prefix,
                         0,
-                        max_depth,
+                        max_level,
                         max_folders,
+                        delimiter,
                         objects_keys,
                         queue,
                         active_tasks,
@@ -165,17 +175,21 @@ class S3BucketObjects:
         self,
         prefix: str = "/",
         *,
-        max_depth: Optional[int] = None,
+        max_level: Optional[int] = None,
         max_folders: Optional[int] = None,
+        delimiter: str = "/",
     ) -> List[Dict[str, Any]]:
         """List all objects in the bucket with the given prefix.
 
-        max_depth: The maximum folders depth to traverse in separate requests. If None, traverse all levels.
+        max_level: The maximum folders depth to traverse in separate requests. If None, traverse all levels.
         max_folders: The maximum number of folders to load in separate requests. If None, requests all folders.
         Otherwise, the folders are grouped by prefixes before loading in separate requests.
         Try to group to the given `max_folders` if possible.
+        delimiter: The delimiter for "folders".
         """
         objects = []
-        async for objects_page in self.iter(prefix, max_depth=max_depth, max_folders=max_folders):
+        async for objects_page in self.iter(
+            prefix, max_level=max_level, max_folders=max_folders, delimiter=delimiter
+        ):
             objects.extend(objects_page)
         return objects
