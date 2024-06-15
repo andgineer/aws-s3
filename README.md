@@ -2,13 +2,13 @@
 
 [Full report](https://htmlpreview.github.io/?https://github.com/andgineer/async-s3/blob/python-coverage-comment-action-data/htmlcov/index.html)
 
-| Name                                  |    Stmts |     Miss |   Cover |   Missing |
-|-------------------------------------- | -------: | -------: | ------: | --------: |
-| src/async\_s3/\_\_about\_\_.py        |        1 |        0 |    100% |           |
-| src/async\_s3/group\_by\_prefix.py    |       52 |        1 |     98% |        64 |
-| src/async\_s3/list\_objects\_async.py |       69 |        8 |     88% |18, 23-27, 90-92, 132 |
-| src/async\_s3/main.py                 |       68 |        2 |     97% |   147-148 |
-|                             **TOTAL** |  **190** |   **11** | **94%** |           |
+| Name                                 |    Stmts |     Miss |   Cover |   Missing |
+|------------------------------------- | -------: | -------: | ------: | --------: |
+| src/async\_s3/\_\_about\_\_.py       |        1 |        0 |    100% |           |
+| src/async\_s3/group\_by\_prefix.py   |       52 |        1 |     98% |        64 |
+| src/async\_s3/main.py                |       68 |        2 |     97% |   147-148 |
+| src/async\_s3/s3\_bucket\_objects.py |       77 |       12 |     84% |18, 23-27, 88-90, 135-137, 146-147 |
+|                            **TOTAL** |  **198** |   **15** | **92%** |           |
 
 
 ## Setup coverage badge
