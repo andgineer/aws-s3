@@ -22,6 +22,9 @@ file = "LICENSE.txt"
 Homepage = "https://andgineer.github.io/async-s3/"
 Documentation = "https://andgineer.github.io/async-s3/"
 
+[project.scripts]
+as3 = "async_s3.main:as3"
+
 [tool.setuptools]
 packages = "find:"
 
@@ -45,6 +48,3 @@ include = [ "README.md", "LICENSE.txt",]
 
 [tool.hatch.version]
 path = "src/async_s3/__about__.py"
-
-[project.scripts]
-as3 = "async_s3.main:as3"

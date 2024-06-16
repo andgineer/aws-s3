@@ -4,6 +4,7 @@ import asyncio
 import time
 from typing import Iterable, Dict, Any, Optional, Callable
 import rich_click as click
+from rich.progress import Progress, TextColumn, BarColumn, TaskProgressColumn
 import botocore.exceptions
 from async_s3.s3_bucket_objects import S3BucketObjects
 from async_s3 import __version__
@@ -12,6 +13,7 @@ from async_s3 import __version__
 click.rich_click.USE_MARKDOWN = True
 
 S3PROTO = "s3://"
+PROGRESS_REFRESH_INTERVAL = 0.5
 
 
 def error(message: str) -> None:
@@ -24,10 +26,10 @@ def print_summary(objects: Iterable[Dict[str, Any]]) -> None:
     """Print a summary of the objects."""
     total_size = sum(obj["Size"] for obj in objects)
     message = (
-        f"{click.style('Total objects: ', fg='green')}"
-        f"{click.style(str(len(list(objects))), fg='green', bold=True)}, "
-        f"{click.style('size: ', fg='green')}"
-        f"{click.style(human_readable_size(total_size), fg='green', bold=True)}"
+        f"{click.style('Total objects: ', fg='yellow')}"
+        f"{click.style(str(len(list(objects))), fg='yellow', bold=True)}, "
+        f"{click.style('size: ', fg='yellow')}"
+        f"{click.style(human_readable_size(total_size), fg='yellow', bold=True)}"
     )
     click.echo(message)
 
@@ -170,7 +172,7 @@ def list_objects(  # pylint: disable=too-many-arguments
     )
 
 
-async def list_objects_async(  # pylint: disable=too-many-arguments
+async def list_objects_async(  # pylint: disable=too-many-arguments, too-many-locals
     s3_url: str,
     max_level: Optional[int],
     max_folders: Optional[int],
@@ -181,44 +183,67 @@ async def list_objects_async(  # pylint: disable=too-many-arguments
     """List objects in an S3 bucket."""
     assert repeat > 0
     click.echo(
-        f"{click.style('Listing objects in ', fg='green')}"
-        f"{click.style(s3_url, fg='green', bold=True)}"
+        f"{click.style('Listing objects in ', fg='yellow')}"
+        f"{click.style(s3_url, fg='yellow', bold=True)}"
     )
     click.echo(
-        f"{click.style('max_level: ', fg='green')}"
-        f"{click.style(str(max_level), fg='green', bold=True)}, "
-        f"{click.style('max_folders: ', fg='green')}"
-        f"{click.style(str(max_folders), fg='green', bold=True)}, "
-        f"{click.style(str(repeat), fg='green', bold=True)}"
-        f"{click.style(' times.', fg='green')}"
+        f"{click.style('max_level: ', fg='yellow')}"
+        f"{click.style(str(max_level), fg='yellow', bold=True)}, "
+        f"{click.style('max_folders: ', fg='yellow')}"
+        f"{click.style(str(max_folders), fg='yellow', bold=True)}, "
+        f"{click.style('delimiter: ', fg='yellow')}"
+        f"{click.style(delimiter, fg='yellow', bold=True)}, "
+        f"{click.style('parallelism: ', fg='yellow')}"
+        f"{click.style(str(parallelism), fg='yellow', bold=True)}, "
+        f"{click.style(str(repeat), fg='yellow', bold=True)}"
+        f"{click.style(' times.', fg='yellow')}"
     )
     bucket, key = s3_url[len(S3PROTO) :].split("/", 1)
     s3_list = S3BucketObjects(bucket, parallelism=parallelism)
 
     total_time = 0.0
-    for _ in range(repeat):
+    for attempt in range(repeat):
         start_time = time.time()
         try:
-            result = await s3_list.list(
-                key, max_level=max_level, max_folders=max_folders, delimiter=delimiter
-            )
+            result = []
+            total_size = 0
+            last_update_time = start_time - PROGRESS_REFRESH_INTERVAL
+            with Progress(
+                TextColumn("[progress.description]{task.description}{task.completed:>,}"),
+                BarColumn(),
+                TaskProgressColumn(),
+                transient=True,
+            ) as progress:
+                objects_bar = progress.add_task("[green]Objects: ", total=None)
+                size_bar = progress.add_task("[green]Size:    ", total=None)
+                async for objects_page in s3_list.iter(
+                    key, max_level=max_level, max_folders=max_folders, delimiter=delimiter
+                ):
+                    result.extend(objects_page)
+                    page_size = sum(obj["Size"] for obj in objects_page)
+                    total_size += page_size
+                    current_time = time.time()
+                    if current_time - last_update_time >= PROGRESS_REFRESH_INTERVAL:
+                        progress.update(objects_bar, advance=len(objects_page))
+                        progress.update(size_bar, advance=page_size)
+                        last_update_time = current_time
+                progress.remove_task(objects_bar)
+                progress.remove_task(size_bar)
         except botocore.exceptions.ClientError as exc:
             error(f"Error: {exc}")
         end_time = time.time()
         duration = end_time - start_time
         click.echo(
-            f"{click.style('Got ', fg='green')}"
-            f"{click.style(str(len(list(result))), fg='green', bold=True)} "
-            f"{click.style('objects, elapsed time: ', fg='green')}"
+            f"{click.style(f'({attempt + 1}) Elapsed time: ', fg='green')}"
             f"{click.style(f'{duration:.2f}', fg='green', bold=True)} "
             f"{click.style('seconds', fg='green')}"
         )
         total_time += duration
     if repeat > 1:
         click.echo(
-            f"{click.style('Average time: ', fg='green')}"
-            f"{click.style(f'{total_time / repeat:.2f}', fg='green', bold=True)} "
-            f"{click.style('seconds', fg='green')}"
+            f"{click.style('Average time: ', fg='yellow')}"
+            f"{click.style(f'{total_time / repeat:.2f}', fg='yellow', bold=True)} "
+            f"{click.style('seconds', fg='yellow')}"
         )
     return result
 
