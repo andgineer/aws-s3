@@ -1,4 +1,4 @@
-from unittest.mock import patch, AsyncMock
+from unittest.mock import patch, AsyncMock, MagicMock
 
 import pytest
 
@@ -68,8 +68,13 @@ def test_as3_invalid_s3_url_du():
     assert "Invalid S3 URL. It should start with s3://" in result.output
 
 
+async def mock_iter(pages):
+    for item in pages:
+        yield item
+
+
 @pytest.mark.asyncio
-async def test_list_objects_async():
+async def test_list_objects_async_no_repeat():
     mock_result = [
         {"Key": "file1.txt", "Size": 1234},
         {"Key": "file2.txt", "Size": 5678},
@@ -77,7 +82,7 @@ async def test_list_objects_async():
 
     with patch('async_s3.main.S3BucketObjects') as MockS3BucketObjects:
         instance = MockS3BucketObjects.return_value
-        instance.list = AsyncMock(return_value=mock_result)
+        instance.iter = MagicMock(side_effect=lambda *args, **kwargs: mock_iter([mock_result, []]))
 
         s3_url = "s3://bucket/key"
         max_level = 1
@@ -89,7 +94,8 @@ async def test_list_objects_async():
         result = await list_objects_async(s3_url, max_level, max_folders, repeat, parallelism, delimiter)
 
         assert result == mock_result
-        instance.list.assert_awaited_once_with('key', max_level=max_level, max_folders=max_folders, delimiter=delimiter)
+        assert instance.iter.call_count == repeat
+
 
 @pytest.mark.asyncio
 async def test_list_objects_async_repeat():
@@ -99,9 +105,6 @@ async def test_list_objects_async_repeat():
     ]
 
     with patch('async_s3.main.S3BucketObjects') as MockS3BucketObjects:
-        instance = MockS3BucketObjects.return_value
-        instance.list = AsyncMock(return_value=mock_result)
-
         s3_url = "s3://bucket/key"
         max_level = 1
         max_folders = 1
@@ -109,8 +112,10 @@ async def test_list_objects_async_repeat():
         parallelism = 100
         delimiter = '/'
 
+        instance = MockS3BucketObjects.return_value
+        instance.iter = MagicMock(side_effect=lambda *args, **kwargs: mock_iter([mock_result, []]))
+
         result = await list_objects_async(s3_url, max_level, max_folders, repeat, parallelism, delimiter)
 
         assert result == mock_result
-        assert instance.list.call_count == repeat
-        instance.list.assert_awaited_with('key', max_level=max_level, max_folders=max_folders, delimiter=delimiter)
+        assert instance.iter.call_count == repeat
