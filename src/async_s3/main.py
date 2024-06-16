@@ -272,11 +272,12 @@ async def list_objects_with_progress(  # pylint: disable=too-many-locals
                 key, max_level=max_level, max_folders=max_folders, delimiter=delimiter
             ):
                 result.extend(objects_page)
-                total_size += sum(obj["Size"] for obj in objects_page)
+                page_objects_size = sum(obj["Size"] for obj in objects_page)
+                total_size += page_objects_size
                 current_time = time.time()
                 if current_time - last_update_time >= PROGRESS_REFRESH_INTERVAL:
                     progress.update(objects_bar, advance=len(objects_page))
-                    progress.update(size_bar, advance=total_size)
+                    progress.update(size_bar, advance=page_objects_size)
                     last_update_time = current_time
             progress.remove_task(objects_bar)
             progress.remove_task(size_bar)
